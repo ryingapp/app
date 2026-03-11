@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "TryingPOS",
+    "slug": "tryingpos",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "tryingpos",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tryingpos.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0F19"
+      },
+      "package": "com.tryingpos.app",
+      "permissions": [
+        "INTERNET",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_CONNECT",
+        "BLUETOOTH_SCAN"
+      ]
+    },
+    "plugins": [
+      "expo-font",
+      "expo-asset",
+      "expo-sqlite"
+    ]
+  }
+}
