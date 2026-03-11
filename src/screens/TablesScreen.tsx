@@ -343,7 +343,7 @@ export default function TablesScreen() {
   const isOccupiedAction = currentActionTable?.status === 'occupied';
 
   const renderTable = ({ item }: { item: Table }) => {
-    const cfg = STATUS_CONFIG[item.status];
+    const cfg = STATUS_CONFIG[item.status] ?? STATUS_CONFIG['available'];
     const isOccupied = item.status === 'occupied';
     const isMergeSelected = actionMode === 'merge' && mergeSelected.includes(item.id);
     const isTransferSource = actionMode === 'transfer_select_target' && item.id === transferSourceId;
@@ -757,13 +757,13 @@ export default function TablesScreen() {
                     handleTransferTarget(item.id);
                   }}
                 >
-                  <View style={[s.tableIcon, { backgroundColor: STATUS_CONFIG[item.status].bg, marginEnd: 12 }]}>
-                    <Ionicons name={STATUS_CONFIG[item.status].icon as any} size={20} color={STATUS_CONFIG[item.status].color} />
+                  <View style={[s.tableIcon, { backgroundColor: (STATUS_CONFIG[item.status] ?? STATUS_CONFIG['available']).bg, marginEnd: 12 }]}>
+                    <Ionicons name={(STATUS_CONFIG[item.status] ?? STATUS_CONFIG['available']).icon as any} size={20} color={(STATUS_CONFIG[item.status] ?? STATUS_CONFIG['available']).color} />
                   </View>
                   <View style={{ flex: 1 }}>
                       <Text style={[s.statusMenuText, { textAlign: isRTL ? 'right' : 'left' }]}>{item.name}</Text>
                       <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: isRTL ? 'right' : 'left' }}>
-                        {STATUS_CONFIG[item.status].label}
+                        {(STATUS_CONFIG[item.status] ?? STATUS_CONFIG['available']).label}
                         {item.guests ? ` • ${item.guests} ${t('guests')}` : ''}
                       </Text>
                   </View>

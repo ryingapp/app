@@ -90,8 +90,8 @@ export default function DeliveryScreen() {
   const s = dynStyles(colors, isRTL);
 
   const renderOrder = ({ item: order }: { item: DeliveryOrder }) => {
-    const platformCfg = PLATFORM_MAP[order.platform];
-    const statusCfg = STATUS_MAP[order.status];
+    const platformCfg = PLATFORM_MAP[order.platform] ?? { label: order.platform, color: colors.textMuted, bg: 'rgba(255,255,255,0.05)', icon: '📦' };
+    const statusCfg = STATUS_MAP[order.status] ?? { label: order.status, color: colors.textMuted, bg: 'rgba(255,255,255,0.05)' };
     const nextAction = STATUS_FLOW[order.status];
 
     return (

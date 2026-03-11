@@ -117,7 +117,7 @@ export default function OrdersScreen() {
   };
 
   const renderOrder = ({ item: order }: { item: Order }) => {
-    const statusCfg = STATUS_MAP[order.status];
+    const statusCfg = STATUS_MAP[order.status] ?? STATUS_MAP['pending'];
     const isDineIn = order.orderType === 'dine_in';
     const tableName = isDineIn && order.tableId ? (tableMap[order.tableId] || order.tableId) : null;
     
