@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +26,7 @@ export default function OrdersScreen() {
   const { t, language, isRTL } = useLanguage();
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all');
   const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [restaurant, setRestaurant] = useState<any>(null);
   const [tableMap, setTableMap] = useState<Record<string, string>>({});
 
@@ -41,7 +43,9 @@ export default function OrdersScreen() {
       const map: Record<string, string> = {};
       for (const tbl of tablesData) { map[tbl.id] = tbl.name || tbl.tableNumber || tbl.id; }
       setTableMap(map);
-    } catch (e) { console.error('Failed to load orders', e); }
+    } catch (e) { console.error('Failed to load orders', e); } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -96,6 +100,16 @@ export default function OrdersScreen() {
   };
 
   const s = dynStyles(colors, isRTL);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[s.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const num = (value: any, fallback = 0) => {
     const n = Number(value);

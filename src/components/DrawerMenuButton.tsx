@@ -3,7 +3,7 @@ import { TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../constants/ThemeContext';
 import { useLanguage } from '../i18n/LanguageContext';
-import { useDrawer } from '../navigation/AppNavigator';
+import { useDrawer } from '../context/DrawerContext';
 
 export function DrawerMenuButton() {
   const { colors } = useTheme();

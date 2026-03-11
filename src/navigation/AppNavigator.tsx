@@ -1,4 +1,4 @@
-import React, { useState, useRef, createContext, useContext } from 'react';
+import React, { useState, useRef } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { DrawerContext, useDrawer } from '../context/DrawerContext';
 import { connectRealtime } from '../services/realtime';
 import { api } from '../services/api';
 
@@ -46,19 +47,8 @@ const Stack = createNativeStackNavigator();
 const DRAWER_WIDTH = 280;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-interface DrawerContextType {
-  openDrawer: () => void;
-  closeDrawer: () => void;
-  isOpen: boolean;
-}
-
-const DrawerContext = createContext<DrawerContextType>({
-  openDrawer: () => {},
-  closeDrawer: () => {},
-  isOpen: false,
-});
-
-export const useDrawer = () => useContext(DrawerContext);
+// useDrawer is re-exported from DrawerContext for backward compatibility
+export { useDrawer };
 
 interface DrawerSection {
   title: string;

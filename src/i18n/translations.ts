@@ -33,6 +33,8 @@ export const translations: Record<Language, Record<string, string>> = {
     save: 'حفظ',
     cancel: 'إلغاء',
     edit: 'تعديل',
+    error: 'خطأ',
+    failedToLoadData: 'فشل تحميل البيانات',
 
     // Auth
     login: 'تسجيل الدخول',
@@ -73,6 +75,7 @@ export const translations: Record<Language, Record<string, string>> = {
     items: 'أصناف',
     item: 'صنف',
     noOrders: 'لا توجد طلبات',
+    guest: 'ضيف',
     markPreparing: 'بدء التحضير',
     markReady: 'جاهز للتسليم',
     markCompleted: 'تم التسليم',
@@ -421,6 +424,8 @@ export const translations: Record<Language, Record<string, string>> = {
     save: 'Save',
     cancel: 'Cancel',
     edit: 'Edit',
+    error: 'Error',
+    failedToLoadData: 'Failed to load data',
 
     // Auth
     login: 'Login',
@@ -461,6 +466,7 @@ export const translations: Record<Language, Record<string, string>> = {
     items: 'items',
     item: 'item',
     noOrders: 'No orders',
+    guest: 'Guest',
     markPreparing: 'Start Preparing',
     markReady: 'Mark Ready',
     markCompleted: 'Mark Completed',

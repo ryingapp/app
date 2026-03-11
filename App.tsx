@@ -3,7 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import { Platform, View, Text } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Constants from 'expo-constants';
 import AppNavigator from './src/navigation/AppNavigator';
 import ForceUpdateScreen from './src/screens/ForceUpdateScreen';
 import { ThemeProvider, useTheme } from './src/constants/ThemeContext';
@@ -18,6 +17,9 @@ import { initLocalFinanceDb } from './src/services/localDb';
 
 // Initialize error monitoring as early as possible
 initErrorReporting();
+
+// Keep this in sync with app.json "version" field
+const APP_VERSION = '1.0.0';
 
 // Semantic version comparison: returns true if `current` is older than `minimum`
 function isVersionOutdated(current: string, minimum: string): boolean {
@@ -66,7 +68,6 @@ function AppContent() {
 
   // Version check — runs once on mount, fails silently to never block on network error
   useEffect(() => {
-    const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
     fetch(`${API_BASE}/api/app-version`)
       .then((r) => r.json())
       .then((data: { minVersion: string; latestVersion: string; storeUrlAndroid: string; storeUrlIos: string }) => {
@@ -168,7 +169,6 @@ function AppContent() {
   };
 
   if (forceUpdate) {
-    const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
     return (
       <ForceUpdateScreen
         currentVersion={APP_VERSION}
