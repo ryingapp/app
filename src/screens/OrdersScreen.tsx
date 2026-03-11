@@ -305,6 +305,10 @@ export default function OrdersScreen() {
         renderItem={renderOrder}
         contentContainerStyle={s.list}
         showsVerticalScrollIndicator={false}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        removeClippedSubviews
+        initialNumToRender={10}
         ListEmptyComponent={
           <View style={s.empty}>
             <Ionicons name="bag-outline" size={48} color={colors.textDark} />

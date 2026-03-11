@@ -1,6 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { api, setApiToken, setOnUnauthorized } from '../services/api';
+import { setUserContext, clearUserContext } from '../services/errorReporting';
+
+// Secure storage helpers — fall back to no-op on web (SecureStore is native only)
+const secureGet = (key: string) =>
+  SecureStore.getItemAsync(key).catch(() => null);
+const secureSet = (key: string, value: string) =>
+  SecureStore.setItemAsync(key, value).catch(() => {});
+const secureDelete = (key: string) =>
+  SecureStore.deleteItemAsync(key).catch(() => {});
 
 interface User {
   id: string;
@@ -47,8 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function loadStoredAuth() {
     try {
-      const storedToken = await AsyncStorage.getItem('auth_token');
-      const storedUser = await AsyncStorage.getItem('auth_user');
+      const storedToken = await secureGet('auth_token');
+      const storedUser = await secureGet('auth_user');
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
@@ -67,16 +76,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(newToken);
     setUser(newUser);
     setApiToken(newToken);
-    await AsyncStorage.setItem('auth_token', newToken);
-    await AsyncStorage.setItem('auth_user', JSON.stringify(newUser));
+    setUserContext(newUser.id, newUser.email);
+    await secureSet('auth_token', newToken);
+    await secureSet('auth_user', JSON.stringify(newUser));
   }
 
   async function logout() {
     setToken(null);
     setUser(null);
     setApiToken('');
-    await AsyncStorage.removeItem('auth_token');
-    await AsyncStorage.removeItem('auth_user');
+    clearUserContext();
+    await secureDelete('auth_token');
+    await secureDelete('auth_user');
   }
 
   // Keep ref in sync so the onUnauthorized callback always calls the current logout

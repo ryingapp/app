@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { I18nManager } from 'react-native';
+import { I18nManager, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { translations, Language } from './translations';
 
@@ -49,6 +49,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const newRTL = lang === 'ar';
     if (I18nManager.isRTL !== newRTL) {
       I18nManager.forceRTL(newRTL);
+      // Native RTL changes require an app restart to take full effect
+      Alert.alert(
+        lang === 'ar' ? 'يتطلب إعادة تشغيل' : 'Restart Required',
+        lang === 'ar'
+          ? 'يرجى إغلاق التطبيق وإعادة فتحه لتطبيق تغيير اللغة بشكل كامل.'
+          : 'Please close and reopen the app to fully apply the language change.',
+        [{ text: lang === 'ar' ? 'حسناً' : 'OK' }]
+      );
     }
   }, []);
 

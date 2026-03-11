@@ -8,6 +8,10 @@ import { ThemeProvider, useTheme } from './src/constants/ThemeContext';
 import { LanguageProvider } from './src/i18n/LanguageContext';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { initializeSoftPos, isSoftPosReady, logSoftPosDiagnostics } from './src/services/edfapaySoftpos';
+import { initErrorReporting, captureError } from './src/services/errorReporting';
+
+// Initialize error monitoring as early as possible
+initErrorReporting();
 import { processSyncQueue } from './src/services/syncEngine';
 import { OfflineStorage } from './src/services/storage';
 import { getOfflineRecoverySummary } from './src/services/offlineSales';
@@ -16,6 +20,9 @@ import { initLocalFinanceDb } from './src/services/localDb';
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {error: any}> {
   state = { error: null as any };
   static getDerivedStateFromError(error: any) { return { error }; }
+  componentDidCatch(error: any, info: any) {
+    captureError(error, { componentStack: info?.componentStack });
+  }
   render() {
     if (this.state.error) {
       return (

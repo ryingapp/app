@@ -154,14 +154,20 @@ export default function KitchenScreen() {
   useEffect(() => {
     loadKitchenOrders(false);
 
-    // Real-time updates
+    // Real-time updates via WebSocket
     const disconnect = connectRealtime((message) => {
       if (['new_order', 'order_updated', 'order_status_changed'].includes(message.type)) {
         loadKitchenOrders(false);
       }
     });
 
-    return disconnect;
+    // Polling fallback every 20s in case WebSocket misses events
+    const poll = setInterval(() => loadKitchenOrders(false), 20000);
+
+    return () => {
+      disconnect();
+      clearInterval(poll);
+    };
   }, [loadKitchenOrders]);
 
   // ==================== Item Selection ====================

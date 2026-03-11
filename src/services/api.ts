@@ -34,7 +34,16 @@ export function getApiToken(): string | undefined {
   return config.token;
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+// Returns true for errors that should NOT be retried (client errors, auth errors)
+function isNonRetryableStatus(status: number): boolean {
+  return status >= 400 && status < 500 && status !== 429;
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function request<T>(endpoint: string, options: RequestInit = {}, retriesLeft = 3): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -52,6 +61,12 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       headers,
     });
   } catch (error: any) {
+    // Network failure — retry with exponential backoff
+    if (retriesLeft > 0) {
+      const attempt = 4 - retriesLeft; // 0, 1, 2
+      await sleep(Math.pow(2, attempt) * 1000); // 1s, 2s, 4s
+      return request<T>(endpoint, options, retriesLeft - 1);
+    }
     throw new ApiError(
       `Network request failed. API=${API_BASE_URL}. ${error?.message || ''}`.trim(),
       0,
@@ -63,6 +78,12 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     const errorPayload = await response.json().catch(() => ({ message: 'Network error' }));
     if (response.status === 401 && _onUnauthorized) {
       _onUnauthorized();
+    }
+    // Retry on server errors (5xx) or rate limiting (429)
+    if (!isNonRetryableStatus(response.status) && retriesLeft > 0) {
+      const attempt = 4 - retriesLeft;
+      await sleep(Math.pow(2, attempt) * 1000);
+      return request<T>(endpoint, options, retriesLeft - 1);
     }
     throw new ApiError(
       errorPayload.error || errorPayload.message || `HTTP ${response.status}`,

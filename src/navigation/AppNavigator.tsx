@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   View,
   Text,
+  ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
   Animated,
@@ -422,7 +423,7 @@ function DrawerOverlay({ isOpen, closeDrawer, navigationRef, pendingTableOrdersC
 export default function AppNavigator() {
   const { colors } = useTheme();
   const { language } = useLanguage();
-  const { token } = useAuth();
+  const { token, isLoading } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [pendingTableOrdersCount, setPendingTableOrdersCount] = useState(0);
   const navigationRef = useRef<any>(null);
@@ -505,7 +506,13 @@ export default function AppNavigator() {
 
   return (
     <DrawerContext.Provider value={{ openDrawer, closeDrawer, isOpen: drawerOpen }}>
-      <View style={ds.layoutContainer}>
+      {/* Show loading spinner while auth state is being read from SecureStore */}
+      {isLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : (
+        <View style={ds.layoutContainer}>
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
@@ -513,25 +520,39 @@ export default function AppNavigator() {
             animation: 'none',
           }}
         >
-          <Stack.Screen name="Auth" component={AuthScreen} />
-          <Stack.Screen name="Dashboard" component={DashboardScreen} />
-          <Stack.Screen name="POS" component={POSScreen} />
-          <Stack.Screen name="Orders" component={OrdersScreen} />
-          <Stack.Screen name="Tables" component={TablesScreen} />
-          <Stack.Screen name="Kitchen" component={KitchenScreen} />
-          <Stack.Screen name="Invoices" component={InvoicesScreen} />
-          <Stack.Screen name="Reservations" component={ReservationsScreen} />
-          <Stack.Screen name="Queue" component={QueueScreen} />
-          <Stack.Screen name="Customers" component={CustomersScreen} />
-          <Stack.Screen name="DaySession" component={DaySessionScreen} />
-          <Stack.Screen name="OfflineCenter" component={OfflineCenterScreen} />
-          <Stack.Screen name="Delivery" component={DeliveryScreen} />
-          <Stack.Screen name="Loyalty" component={LoyaltyScreen} />
-          <Stack.Screen name="Settings" component={SettingsScreen} />
+          {/* Auth guard: only show protected screens when authenticated */}
+          {!token ? (
+            <Stack.Screen name="Auth" component={AuthScreen} />
+          ) : (
+            <>
+              <Stack.Screen name="Dashboard" component={DashboardScreen} />
+              <Stack.Screen name="POS" component={POSScreen} />
+              <Stack.Screen name="Orders" component={OrdersScreen} />
+              <Stack.Screen name="Tables" component={TablesScreen} />
+              <Stack.Screen name="Kitchen" component={KitchenScreen} />
+              <Stack.Screen name="Invoices" component={InvoicesScreen} />
+              <Stack.Screen name="Reservations" component={ReservationsScreen} />
+              <Stack.Screen name="Queue" component={QueueScreen} />
+              <Stack.Screen name="Customers" component={CustomersScreen} />
+              <Stack.Screen name="DaySession" component={DaySessionScreen} />
+              <Stack.Screen name="OfflineCenter" component={OfflineCenterScreen} />
+              <Stack.Screen name="Delivery" component={DeliveryScreen} />
+              <Stack.Screen name="Loyalty" component={LoyaltyScreen} />
+              <Stack.Screen name="Settings" component={SettingsScreen} />
+            </>
+          )}
         </Stack.Navigator>
         <NavigationCapture ref={navigationRef} />
-        <DrawerOverlay isOpen={drawerOpen} closeDrawer={closeDrawer} navigationRef={navigationRef} pendingTableOrdersCount={pendingTableOrdersCount} />
+        {!!token && (
+          <DrawerOverlay
+            isOpen={drawerOpen}
+            closeDrawer={closeDrawer}
+            navigationRef={navigationRef}
+            pendingTableOrdersCount={pendingTableOrdersCount}
+          />
+        )}
       </View>
+      )}
     </DrawerContext.Provider>
   );
 }

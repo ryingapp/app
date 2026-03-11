@@ -257,7 +257,16 @@ export default function POSScreen() {
   }, [loadData, loadHeldOrders]);
 
   // ==================== Cart Operations ====================
+  // Debounce map: tracks last add timestamp per item id to prevent double-tap duplicates
+  const lastAddTimeRef = useRef<Record<string, number>>({});
+
   const addToCart = useCallback((item: MenuItem, variant: Variant | null, customizations: CustomizationOption[]) => {
+    // Debounce: ignore taps within 400ms for the same item
+    const now = Date.now();
+    const lastTime = lastAddTimeRef.current[item.id] || 0;
+    if (now - lastTime < 400) return;
+    lastAddTimeRef.current[item.id] = now;
+
     let finalPrice = getItemPrice(item);
     if (variant) finalPrice += Number(variant.priceAdjustment || 0);
     customizations.forEach((c) => (finalPrice += Number(c.priceAdjustment || 0)));
@@ -279,7 +288,13 @@ export default function POSScreen() {
   const updateQuantity = useCallback((cartId: string, delta: number) => {
     setCart((prev) =>
       prev
-        .map((i) => (i.cartId === cartId ? { ...i, quantity: i.quantity + delta } : i))
+        .map((i) => {
+          if (i.cartId !== cartId) return i;
+          const newQty = i.quantity + delta;
+          // Validate: quantity cannot exceed 99 or go below 0
+          if (newQty > 99) return i;
+          return { ...i, quantity: newQty };
+        })
         .filter((i) => i.quantity > 0)
     );
   }, []);
@@ -602,7 +617,22 @@ export default function POSScreen() {
 
   const confirmOrder = useCallback(async (quickPaymentMethod?: string) => {
     if (isPlacingOrder) return;
-    
+
+    // ── Input validation ──────────────────────────────────────────────────
+    if (cart.length === 0) {
+      Alert.alert(language === 'ar' ? 'السلة فارغة' : 'Empty Cart', language === 'ar' ? 'أضف عناصر للسلة أولاً' : 'Add items to the cart first.');
+      return;
+    }
+    if (orderType === 'dine_in' && tableNumber && !/^\d+$/.test(tableNumber.trim())) {
+      Alert.alert(language === 'ar' ? 'رقم الطاولة' : 'Table Number', language === 'ar' ? 'رقم الطاولة يجب أن يكون رقماً' : 'Table number must be numeric.');
+      return;
+    }
+    if (customerPhone && customerPhone.trim().length > 0 && customerPhone.trim().length < 8) {
+      Alert.alert(language === 'ar' ? 'رقم الهاتف' : 'Phone Number', language === 'ar' ? 'رقم الهاتف غير صحيح' : 'Invalid phone number.');
+      return;
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
     setIsPlacingOrder(true);
     let orderData: any;
 
@@ -1647,6 +1677,10 @@ export default function POSScreen() {
         ]}
         columnWrapperStyle={numColumns > 1 ? styles.menuGridRow : undefined}
         showsVerticalScrollIndicator={false}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews
+        initialNumToRender={12}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="restaurant-outline" size={48} color={colors.textMuted} />
