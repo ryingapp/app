@@ -151,7 +151,7 @@ export default function KitchenScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [t]);
+  }, [effectiveBranchId, t]);
 
   useEffect(() => {
     loadKitchenOrders(false);

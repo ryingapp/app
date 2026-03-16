@@ -480,7 +480,7 @@ function DrawerOverlay({ isOpen, closeDrawer, navigationRef, pendingTableOrdersC
 export default function AppNavigator() {
   const { colors } = useTheme();
   const { language } = useLanguage();
-  const { token, isLoading } = useAuth();
+  const { token, isLoading, effectiveBranchId } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [pendingTableOrdersCount, setPendingTableOrdersCount] = useState(0);
   const navigationRef = useRef<any>(null);
@@ -496,13 +496,13 @@ export default function AppNavigator() {
     }
 
     try {
-      const pendingOrders = await api.orders.list({ status: 'pending' });
+      const pendingOrders = await api.orders.list({ status: 'pending', branchId: effectiveBranchId ?? undefined });
       const tablePending = (pendingOrders || []).filter((order: any) => order?.orderType === 'dine_in' && !!order?.tableId);
       setPendingTableOrdersCount(tablePending.length);
     } catch (e) {
       console.error('Failed to load pending table orders count', e);
     }
-  }, [token]);
+  }, [token, effectiveBranchId]);
 
   React.useEffect(() => {
     refreshPendingTableOrders();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -44,11 +44,7 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   // Load data
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const data = await api.orders.list({ branchId: effectiveBranchId ?? undefined });
       setOrders(data || []);
@@ -58,7 +54,11 @@ export default function DashboardScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [effectiveBranchId, t]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const onRefresh = () => {
     setRefreshing(true);

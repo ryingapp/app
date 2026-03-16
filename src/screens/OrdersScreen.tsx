@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -32,7 +32,7 @@ export default function OrdersScreen() {
   const [restaurant, setRestaurant] = useState<any>(null);
   const [tableMap, setTableMap] = useState<Record<string, string>>({});
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       const [orderData, restData, tablesData] = await Promise.all([
         api.orders.list({ branchId: effectiveBranchId ?? undefined }),
@@ -48,7 +48,7 @@ export default function OrdersScreen() {
     } catch (e) { console.error('Failed to load orders', e); } finally {
       setLoading(false);
     }
-  };
+  }, [effectiveBranchId]);
 
   useEffect(() => {
     loadOrders();
@@ -72,7 +72,7 @@ export default function OrdersScreen() {
       disconnect();
       clearInterval(poll);
     };
-  }, []);
+  }, [loadOrders]);
 
   const STATUS_MAP: Record<OrderStatus, { label: string; color: string; bg: string }> = {
     created: { label: language === 'ar' ? 'منشأ' : 'Created', color: colors.amber, bg: colors.amberBg },
