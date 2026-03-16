@@ -164,11 +164,12 @@ export const api = {
   },
 
     orders: {
-    list: (params?: { status?: string; type?: string; period?: string }) => {
+    list: (params?: { status?: string; type?: string; period?: string; branchId?: string }) => {
       const query = new URLSearchParams();
       if (params?.status) query.append('status', params.status);
       if (params?.type) query.append('type', params.type);
       if (params?.period) query.append('period', params.period);
+      if (params?.branchId) query.append('branch', params.branchId);
       const qs = query.toString();
       return request<any[]>(`/orders${qs ? `?${qs}` : ''}`);
     },
@@ -212,7 +213,10 @@ export const api = {
   },
 
   kitchen: {
-    orders: () => request<any[]>('/kitchen/orders'),
+    orders: (branchId?: string) => {
+      const qs = branchId ? `?branch=${encodeURIComponent(branchId)}` : '';
+      return request<any[]>(`/kitchen/orders${qs}`);
+    },
   },
 
   customers: {

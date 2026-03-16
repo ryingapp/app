@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../constants/ThemeContext';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { Order } from '../constants/types';
 import { api } from '../services/api';
 import { connectRealtime } from '../services/realtime';
@@ -57,6 +58,7 @@ interface KitchenOrder extends Omit<Order, 'items'> {
 export default function KitchenScreen() {
   const { colors } = useTheme();
   const { t, language, isRTL } = useLanguage();
+  const { effectiveBranchId } = useAuth();
   const navigation = useNavigation();
 
   // State
@@ -140,7 +142,7 @@ export default function KitchenScreen() {
     if (showLoading) setLoading(true);
     
     try {
-      const data = await api.kitchen.orders();
+      const data = await api.kitchen.orders(effectiveBranchId ?? undefined);
       setOrders(data || []);
     } catch (error) {
       console.error('Failed to load kitchen orders:', error);

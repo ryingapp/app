@@ -14,6 +14,7 @@ import {
   ScrollView,
   Alert,
   Image,
+  Modal,
 } from 'react-native';
 
 const drawerLogo = (() => {
@@ -68,8 +69,22 @@ function CustomDrawerContent({
 }) {
   const { colors, isDark } = useTheme();
   const { t, language, isRTL } = useLanguage();
-  const { user } = useAuth();
+  const { user, selectedBranchId, setSelectedBranchId } = useAuth();
   const insets = useSafeAreaInsets();
+
+  const isOwnerLike = user?.role === 'owner' || user?.role === 'platform_admin';
+  const [branches, setBranches] = useState<any[]>([]);
+  const [branchPickerVisible, setBranchPickerVisible] = useState(false);
+
+  React.useEffect(() => {
+    if (isOwnerLike) {
+      api.branches.list().then(setBranches).catch(() => {});
+    }
+  }, [isOwnerLike]);
+
+  const selectedBranchName = selectedBranchId
+    ? (branches.find((b) => b.id === selectedBranchId)?.name || selectedBranchId)
+    : (language === 'ar' ? 'كل الفروع' : 'All Branches');
 
   const sections: DrawerSection[] = [
     {
@@ -113,7 +128,7 @@ function CustomDrawerContent({
     },
   ];
 
-  const isOwnerLike = user?.role === 'owner' || user?.role === 'platform_admin';
+  // isOwnerLike is already declared above
 
   const screenPermissions: Record<string, keyof NonNullable<typeof user> | null> = {
     Dashboard: 'permDashboard',
@@ -192,6 +207,58 @@ function CustomDrawerContent({
           <Ionicons name="close" size={20} color={colors.textMuted} />
         </TouchableOpacity>
       </View>
+
+      {/* Branch picker for owners only */}
+      {isOwnerLike && branches.length > 0 && (
+        <>
+          <TouchableOpacity
+            onPress={() => setBranchPickerVisible(true)}
+            style={[ds.branchPickerBtn, { backgroundColor: colors.surfaceLight, borderColor: colors.borderLight, flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+          >
+            <Ionicons name="git-branch-outline" size={16} color={colors.primary} />
+            <Text style={[ds.branchPickerLabel, { color: colors.text, textAlign: isRTL ? 'right' : 'left' }]} numberOfLines={1}>
+              {selectedBranchName}
+            </Text>
+            <Ionicons name="chevron-down" size={14} color={colors.textMuted} />
+          </TouchableOpacity>
+          <Modal
+            visible={branchPickerVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setBranchPickerVisible(false)}
+          >
+            <Pressable style={ds.modalOverlay} onPress={() => setBranchPickerVisible(false)}>
+              <View style={[ds.branchModal, { backgroundColor: colors.surface }]}>
+                <Text style={[ds.branchModalTitle, { color: colors.text }]}>
+                  {language === 'ar' ? 'اختر الفرع' : 'Select Branch'}
+                </Text>
+                {/* "All Branches" option */}
+                <TouchableOpacity
+                  style={[ds.branchOption, !selectedBranchId && { backgroundColor: colors.primaryGlow }]}
+                  onPress={() => { setSelectedBranchId(null); setBranchPickerVisible(false); }}
+                >
+                  <Text style={[ds.branchOptionText, { color: !selectedBranchId ? colors.primary : colors.text }]}>
+                    {language === 'ar' ? 'كل الفروع' : 'All Branches'}
+                  </Text>
+                  {!selectedBranchId && <Ionicons name="checkmark" size={16} color={colors.primary} />}
+                </TouchableOpacity>
+                {branches.map((b) => (
+                  <TouchableOpacity
+                    key={b.id}
+                    style={[ds.branchOption, selectedBranchId === b.id && { backgroundColor: colors.primaryGlow }]}
+                    onPress={() => { setSelectedBranchId(b.id); setBranchPickerVisible(false); }}
+                  >
+                    <Text style={[ds.branchOptionText, { color: selectedBranchId === b.id ? colors.primary : colors.text }]}>
+                      {b.name || b.nameAr || b.id}
+                    </Text>
+                    {selectedBranchId === b.id && <Ionicons name="checkmark" size={16} color={colors.primary} />}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </Pressable>
+          </Modal>
+        </>
+      )}
 
       <ScrollView
         style={ds.drawerScroll}
@@ -615,6 +682,55 @@ const ds = StyleSheet.create({
   },
   drawerScroll: {
     flex: 1,
+  },
+  branchPickerBtn: {
+    marginHorizontal: 12,
+    marginTop: 8,
+    marginBottom: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  branchPickerLabel: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  branchModal: {
+    borderRadius: 16,
+    padding: 16,
+    width: '100%',
+    maxWidth: 340,
+    gap: 4,
+  },
+  branchModalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  branchOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  branchOptionText: {
+    fontSize: 15,
+    fontWeight: '500',
   },
   drawerSection: {
     paddingHorizontal: 12,

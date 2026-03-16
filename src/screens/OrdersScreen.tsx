@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { radius } from '../constants/theme';
 import { useTheme } from '../constants/ThemeContext';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { Order, OrderStatus } from '../constants/types';
 import { api } from '../services/api';
 import { connectRealtime } from '../services/realtime';
@@ -24,6 +25,7 @@ import { DrawerMenuButton } from '../components/DrawerMenuButton';
 export default function OrdersScreen() {
   const { colors } = useTheme();
   const { t, language, isRTL } = useLanguage();
+  const { effectiveBranchId } = useAuth();
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all');
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ export default function OrdersScreen() {
   const loadOrders = async () => {
     try {
       const [orderData, restData, tablesData] = await Promise.all([
-        api.orders.list(),
+        api.orders.list({ branchId: effectiveBranchId ?? undefined }),
         api.restaurant.get(),
         api.tables.list().catch(() => [] as any[]),
       ]);

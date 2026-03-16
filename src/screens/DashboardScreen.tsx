@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../constants/ThemeContext';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { DrawerMenuButton } from '../components/DrawerMenuButton';
 
@@ -35,6 +36,7 @@ interface Stats {
 export default function DashboardScreen() {
   const { colors } = useTheme();
   const { t, language, isRTL } = useLanguage();
+  const { effectiveBranchId } = useAuth();
 
   // State
   const [orders, setOrders] = useState<Order[]>([]);
@@ -48,7 +50,7 @@ export default function DashboardScreen() {
 
   const loadData = async () => {
     try {
-      const data = await api.orders.list();
+      const data = await api.orders.list({ branchId: effectiveBranchId ?? undefined });
       setOrders(data || []);
     } catch (error) {
       Alert.alert(t('error'), t('failedToLoadData'));

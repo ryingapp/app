@@ -38,6 +38,11 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  /** Owner-selected branch (null = all branches). Ignored for employees (they always use user.branchId). */
+  selectedBranchId: string | null;
+  setSelectedBranchId: (id: string | null) => void;
+  /** The effective branchId to use in API calls: employee's fixed branch OR owner's selection */
+  effectiveBranchId: string | null | undefined;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,7 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
   const logoutRef = useRef<() => Promise<void>>();
+
+  // effectiveBranchId: employee always uses their fixed branchId; owner uses their selection
+  const effectiveBranchId = user?.branchId ?? selectedBranchId;
 
   useEffect(() => {
     loadStoredAuth();
@@ -94,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => { logoutRef.current = logout; });
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout, selectedBranchId, setSelectedBranchId, effectiveBranchId }}>
       {children}
     </AuthContext.Provider>
   );
