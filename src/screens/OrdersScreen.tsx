@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { radius } from '../constants/theme';
 import { useTheme } from '../constants/ThemeContext';
@@ -73,6 +74,9 @@ export default function OrdersScreen() {
       clearInterval(poll);
     };
   }, [loadOrders]);
+
+  // Also reload when screen comes into focus (e.g. after branch selection from drawer)
+  useFocusEffect(useCallback(() => { loadOrders(); }, [loadOrders]));
 
   const STATUS_MAP: Record<OrderStatus, { label: string; color: string; bg: string }> = {
     created: { label: language === 'ar' ? 'منشأ' : 'Created', color: colors.amber, bg: colors.amberBg },

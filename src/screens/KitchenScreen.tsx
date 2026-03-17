@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../constants/ThemeContext';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -171,6 +172,9 @@ export default function KitchenScreen() {
       clearInterval(poll);
     };
   }, [loadKitchenOrders]);
+
+  // Reload when screen comes into focus (e.g. after branch selection)
+  useFocusEffect(useCallback(() => { loadKitchenOrders(false); }, [loadKitchenOrders]));
 
   // ==================== Item Selection ====================
   useEffect(() => {
